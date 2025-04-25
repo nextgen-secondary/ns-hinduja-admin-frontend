@@ -13,7 +13,7 @@ const DoctorsListNew = () => {
     specialization: '',
     allSlots: []
   });
-  
+
   const ALL_SLOTS = [
     "09:00 AM",
     "10:00 AM",

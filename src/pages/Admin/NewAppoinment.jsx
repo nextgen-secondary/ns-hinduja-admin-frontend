@@ -9,6 +9,8 @@ const NewAppoinment = () => {
       try {
         const response = await axios.get('https://hinduja-backend-production.up.railway.app/api/bookings');
         setBookings(response.data);
+        console.log(bookings);
+        
       } catch (error) {
         console.error('Error fetching bookings:', error);
       }
@@ -26,6 +28,7 @@ const NewAppoinment = () => {
           <thead className="bg-blue-600 text-white">
             <tr>
               <th className="py-3 px-4 text-left">Patient Name</th>
+              <th className="py-3 px-4 text-left">Patient ID</th>
               <th className="py-3 px-4 text-left">Doctor ID</th>
               <th className="py-3 px-4 text-left">Date</th>
               <th className="py-3 px-4 text-left">Time</th>
@@ -37,6 +40,7 @@ const NewAppoinment = () => {
               bookings.map((booking) => (
                 <tr key={booking._id} className="border-b hover:bg-gray-100 transition">
                   <td className="py-3 px-4">{booking.patientName}</td>
+                  <td className="py-3 px-4">{booking.patientId}</td>
                   <td className="py-3 px-4">{booking.doctorId}</td>
                   <td className="py-3 px-4">{booking.date}</td>
                   <td className="py-3 px-4">{booking.time}</td>
@@ -47,7 +51,7 @@ const NewAppoinment = () => {
               ))
             ) : (
               <tr>
-                <td colSpan="5" className="py-4 text-center text-gray-500">
+                <td colSpan="6" className="py-4 text-center text-gray-500">
                   No bookings available.
                 </td>
               </tr>
