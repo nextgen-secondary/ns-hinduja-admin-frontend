@@ -8,8 +8,6 @@ const NewAppoinment = () => {
   const [appointmentsPerPage] = useState(10);
   const [activeFilter, setActiveFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
-  const [updatingId, setUpdatingId] = useState(null);
-  const [openDropdown, setOpenDropdown] = useState(null);
 
   useEffect(() => {
     const fetchBookings = async () => {
@@ -64,17 +62,12 @@ const NewAppoinment = () => {
     setCurrentPage(1); // Reset to first page when search changes
   };
 
-  // Toggle dropdown visibility
-  const toggleDropdown = (bookingId) => {
-    setOpenDropdown(openDropdown === bookingId ? null : bookingId);
-  };
-
   const handleStatusChange = async (bookingId, newStatus) => {
     try {
-      setUpdatingId(bookingId); // Set updating state to show loading indicator
+      console.log('Attempting to update status:', { bookingId, newStatus });
       
       const response = await axios.put(
-        `https://hinduja-backend-production.up.railway.app/api/bookings/update/${bookingId}`,
+        `http://localhost:8080/api/bookings/update/${bookingId}`,
         { status: newStatus },
         {
           headers: {
@@ -93,9 +86,6 @@ const NewAppoinment = () => {
             : booking
         )
       );
-
-      // Close the dropdown
-      setOpenDropdown(null);
     } catch (error) {
       console.error('Error details:', {
         message: error.message,
@@ -106,28 +96,11 @@ const NewAppoinment = () => {
       // More descriptive error message
       const errorMessage = error.response?.data?.message || error.message;
       alert(`Failed to update booking status: ${errorMessage}`);
-    } finally {
-      setUpdatingId(null); // Clear updating state
-    }
-  };
-
-  // Get status color class
-  const getStatusColorClass = (status) => {
-    switch(status?.toLowerCase()) {
-      case 'confirmed':
-        return 'bg-green-100 text-green-800';
-      case 'completed':
-      case 'visited':
-        return 'bg-purple-100 text-purple-800';
-      case 'cancelled':
-        return 'bg-red-100 text-red-800';
-      case 'pending':
-      default:
-        return 'bg-yellow-100 text-yellow-800';
     }
   };
 
   return (
+    // Add ml-64 here
     <div className="ml-64 p-6 bg-gray-50 min-h-screen">
       <h2 className="text-2xl font-bold mb-6 text-center text-blue-700">
         Upcoming Appointments
@@ -254,61 +227,37 @@ const NewAppoinment = () => {
                         <td className="py-3 px-4">{booking.date}</td>
                         <td className="py-3 px-4">{booking.time}</td>
                         <td className="py-3 px-4">
-                          {updatingId === booking._id ? (
-                            <div className="flex items-center">
-                              <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-solid border-blue-600 border-r-transparent"></div>
-                              <span className="text-xs">Updating...</span>
-                            </div>
-                          ) : (
-                            <div className="relative">
-                              <button 
-                                onClick={() => toggleDropdown(booking._id)}
-                                className={`px-2 py-1 rounded-full text-xs font-medium flex items-center ${getStatusColorClass(booking.status)}`}
-                              >
-                                {booking.status || 'pending'}
-                                <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
-                                </svg>
-                              </button>
-                              
-                              {openDropdown === booking._id && (
-                                <div className="absolute left-0 mt-1 w-32 bg-white shadow-lg rounded-md overflow-hidden z-10">
-                                  <div className="py-1">
-                                    <button 
-                                      onClick={() => handleStatusChange(booking._id, 'confirmed')}
-                                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50"
-                                    >
-                                      Confirmed
-                                    </button>
-                                    <button 
-                                      onClick={() => handleStatusChange(booking._id, 'visited')}
-                                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50"
-                                    >
-                                      Visited
-                                    </button>
-                                    <button 
-                                      onClick={() => handleStatusChange(booking._id, 'completed')}
-                                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50"
-                                    >
-                                      Completed
-                                    </button>
-                                    <button 
-                                      onClick={() => handleStatusChange(booking._id, 'cancelled')}
-                                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50"
-                                    >
-                                      Cancelled
-                                    </button>
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          )}
+                          <select
+                            value={booking.status}
+                            onChange={(e) =>
+                              handleStatusChange(booking._id, e.target.value)
+                            }
+                            className={`px-2 py-1 rounded text-sm font-medium border ${
+                              booking.status === "confirmed"
+                                ? "bg-green-100 text-green-800 border-green-200"
+                                : booking.status === "pending"
+                                ? "bg-yellow-100 text-yellow-800 border-yellow-200"
+                                : booking.status === "visited"
+                                ? "bg-purple-100 text-purple-800 border-purple-200"
+                                : booking.status === "cancelled"
+                                ? "bg-red-100 text-red-800 border-red-200"
+                                : "bg-gray-100 text-gray-800 border-gray-200"
+                            }`}
+                          >
+                            <option value="pending">Pending</option>
+                            <option value="confirmed">Confirmed</option>
+                            <option value="visited">Visited</option>
+                            <option value="cancelled">Cancelled</option>
+                          </select>
                         </td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="6" className="py-8 text-center text-gray-500">
+                      <td
+                        colSpan="6"
+                        className="py-8 text-center text-gray-500"
+                      >
                         {searchTerm
                           ? "No matching appointments found."
                           : "No appointments available."}
