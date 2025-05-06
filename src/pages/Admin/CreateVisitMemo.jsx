@@ -273,6 +273,8 @@ const CreateVisitMemo = () => {
         },
         { headers: { aToken } }
       );
+      //LOG
+      console.log("Visit Memo Data: ",response);
       
       if (response.data.success) {
         toast.success('Visit memo created successfully');
